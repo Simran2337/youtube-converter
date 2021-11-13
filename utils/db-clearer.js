@@ -6,15 +6,15 @@ const fs = require('fs');
 module.exports = () => {
 	cron.schedule(`0 */30 * * * *`, () => {
 		Video.find({ status: true }, (err, videos) => {
-			console.log({ err, videos });
+			console.log({ err, count: videos.length });
 			videos.forEach(video => {
 				const fpath = path.join(__dirname, '..', process.env.FILE_DIR, video.videoId+".mp3");
 				if (fs.existsSync(fpath))
 					fs.unlinkSync(fpath);
 			});
-		});
-		Video.deleteMany({ status: true }, (err, info) => {
-			console.log({ err, info });
+			Video.deleteMany({ status: true }, (err, info) => {
+				console.log({ err, info });
+			});
 		});
 	});
 }
