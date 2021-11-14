@@ -10,6 +10,9 @@ MIT
 @angular/platform-browser
 MIT
 
+@angular/service-worker
+MIT
+
 @socket.io/component-emitter
 MIT
 (The MIT License)
