@@ -6,8 +6,10 @@ require('dotenv').config();
 
 var app = express();
 
-app.use(logger('dev'));
-app.use(require('cors')());
+if (process.env.ENVIRONMENT) {
+        app.use(logger('dev'));
+        app.use(require('cors')());
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
