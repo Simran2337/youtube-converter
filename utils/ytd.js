@@ -27,12 +27,12 @@ YD.on("finished", (err, data) => {
         if (fs.existsSync(fopath))
                 fs.renameSync(fopath, fnpath);
         //Update status for record in DB
-        Video.findOneAndUpdate({ videoId: data.videoId }, { status: true, videoName: data.videoTitle }, (err2, data2) => {
+        Video.findOneAndUpdate({ videoId: data.videoId }, { status: true, videoName: data.videoTitle + ".mp3" }, (err2, data2) => {
                 console.log({ err2 });
                 io.to(data.videoId).emit('download-complete', { videoId: data.videoId });
         });
         console.log(err);
-        console.log(data.videoId, data.videoTitle);
+        // console.log(data.videoId, data.videoTitle);
 });
 
 YD.on("error", (err, data) => {
