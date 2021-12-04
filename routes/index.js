@@ -3,7 +3,7 @@ const Video = require('../models/video');
 const path = require('path');
 router.get('/download/:id', function (req, res) {
 	//Check if a video entry is present
-	Video.findOne({ videoId: req.params.id }, (err, data) => {
+	Video.findOne({ videoName: req.params.id }, (err, data) => {
 		if (err) {
 			console.log(err);
 			res.redirect(process.env.FRONT_END_REDIRECT_URL + "?error=FILE_FETCH_ERROR")

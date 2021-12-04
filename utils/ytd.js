@@ -29,7 +29,7 @@ YD.on("finished", (err, data) => {
         //Update status for record in DB
         Video.findOneAndUpdate({ videoId: data.videoId }, { status: true, videoName: data.videoTitle + ".mp3" }, (err2, data2) => {
                 console.log({ err2 });
-                io.to(data.videoId).emit('download-complete', { videoId: data.videoId });
+                io.to(data.videoId).emit('download-complete', { videoId: data.videoId, videoName: data.videoTitle + ".mp3" });
         });
         console.log(err);
         // console.log(data.videoId, data.videoTitle);

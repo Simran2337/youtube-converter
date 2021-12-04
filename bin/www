@@ -54,7 +54,7 @@ connectDb().then(() => {
           })
         } else { //if yes, respond with appropriate message based on status
           if (data.status) {
-            io.to(videoId).emit('download-complete', { videoId });
+            io.to(videoId).emit('download-complete', { videoId, videoName: data.videoName });
           }
         }
       });
