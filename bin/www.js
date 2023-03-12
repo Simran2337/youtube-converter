@@ -54,59 +54,56 @@ const io = require('socket.io')(server, { cors: { origin: '*' } });
 
 connectDb().then(() => {
 	io.on("connection", socket => {
-		try {
-			console.log('[' + socket.id + '] Connected');
+		console.log('[' + socket.id + '] Connected');
+		if (getMaintenance()) {
+			socket.emit('maintenance-start');
+			return
+		}
+		socket.on('download-initiate', (videoId) => {
 			if (getMaintenance()) {
-				io.emit('maintenance-start');
+				socket.emit('maintenance-start');
 				return
 			}
-			socket.on('download-initiate', (videoId) => {
-				if (getMaintenance()) {
-					io.emit('maintenance-start');
-					return
+			console.log("Download Initiated: VIDEO ID = " + videoId);
+			socket.join(videoId);
+			//Check if a video entry is present
+			Video.findOne({ videoId }, (err, data) => {
+				if (err) {
+					console.log(err);
+					socket.emit('download-error', { videoId, error: err });
 				}
-				console.log("Download Initiated: VIDEO ID = " + videoId);
-				socket.join(videoId);
-				//Check if a video entry is present
-				Video.findOne({ videoId }, (err, data) => {
-					if (err) {
-						console.log(err);
-						io.to(videoId).emit('download-error', { videoId, error: err });
-					}
+				if (!data) {
 					//If not, create one entry, and start downloading
-					if (!data) {
-						new Video({
-							videoId
-						}).save((err2, data2) => {
-							if (err2) {
-								console.log(err);
-								io.to(videoId).emit('download-error', { videoId, error: err });
-							}
-							if (data2) {
-								ytd(videoId, videoId + ".mp3");
-							}
-						})
-					} else { //if yes, respond with appropriate message based on status
-						if (data.status) {
-							io.to(videoId).emit('download-complete', { videoId, videoName: data.videoName });
+					new Video({
+						videoId
+					}).save((err2, data2) => {
+						if (err2) {
+							console.log(err);
+							socket.emit('download-error', { videoId, error: err });
 						}
+						if (data2) {
+							ytd(videoId, videoId + ".mp3");
+							socket.emit('download-start', videoId);
+						}
+					})
+				} else { //if yes, respond with appropriate message based on status
+					if (data.status) {
+						socket.emit('download-complete', { videoId, videoName: data.videoName });
 					}
-				});
-			});
-			socket.on("download-cancel-or-complete", (videoId) => {
-				if (getMaintenance()) {
-					io.emit('maintenance-start');
-					return
 				}
-				console.log("Download Completed: VIDEO ID = " + videoId);
-				socket.leave(videoId);
 			});
-			socket.on("disconnect", () => {
-				console.log('[' + socket.id + '] Disconnected');
-			});
-		} catch (err) {
-			console.error("READ FILE ERROR FROM SOCKET", err)
-		}
+		});
+		socket.on("download-cancel-or-complete", (videoId) => {
+			if (getMaintenance()) {
+				socket.emit('maintenance-start');
+				return
+			}
+			console.log("Download Completed: VIDEO ID = " + videoId);
+			socket.leave(videoId);
+		});
+		socket.on("disconnect", () => {
+			console.log('[' + socket.id + '] Disconnected');
+		});
 	});
 	global.io = io;
 	dbClearer();
