@@ -6,7 +6,7 @@ module.exports = () => {
             console.log('Connected to the Database');
             resolve();
         }).catch(err => {
-            console.log('Connection failed!', err);
+            console.log('Connection Failed!', err);
             reject();
         });
     });
